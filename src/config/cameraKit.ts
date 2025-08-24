@@ -3,7 +3,7 @@ import type { CameraKitConfig } from '../types/camera';
 // Environment variables with fallback values
 const API_TOKEN = import.meta.env.VITE_CAMERA_KIT_API_TOKEN || 'eyJhbGciOiJIUzI1NiIsImtpZCI6IkNhbnZhc1MyU0hNQUNQcm9kIiwidHlwIjoiSldUIn0.eyJhdWQiOiJjYW52YXMtY2FudmFzYXBpIiwiaXNzIjoiY2FudmFzLXMyc3Rva2VuIiwibmJmIjoxNzQ3MDM1OTAyLCJzdWIiOiI2YzMzMWRmYy0zNzEzLTQwYjYtYTNmNi0zOTc2OTU3ZTkyZGF-UFJPRFVDVElPTn5jZjM3ZDAwNy1iY2IyLTQ3YjEtODM2My1jYWIzYzliOGJhM2YifQ.UqGhWZNuWXplirojsPSgZcsO3yu98WkTM1MRG66dsHI';
 
-const LENS_ID = import.meta.env.VITE_CAMERA_KIT_LENS_ID || '2060039a-7b91-4842-9dc7-8106e3071e2b';
+const LENS_ID = import.meta.env.VITE_CAMERA_KIT_LENS_ID || '6bc4aa9c-f753-4754-9876-71b433a3ff2b';
 
 const LENS_GROUP_ID = import.meta.env.VITE_CAMERA_KIT_LENS_GROUP_ID || '2060039a-7b91-4842-9dc7-8106e3071e2b';
 
