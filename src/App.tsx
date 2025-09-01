@@ -1,4 +1,4 @@
-// src/App.tsx - Complete with audio support and Instagram redirect
+// src/App.tsx - Complete with lens restart on recording
 import React, { useState, useEffect, useCallback } from 'react';
 import { 
   CameraProvider, 
@@ -61,7 +61,7 @@ const CameraApp: React.FC = () => {
     setShowRenderingModal
   } = useRecordingContext();
 
-  // Aggressive Instagram redirect check
+  // Instagram redirect check
   useEffect(() => {
     const shouldRedirect = checkAndRedirect();
     
@@ -114,11 +114,9 @@ const CameraApp: React.FC = () => {
       const hasPermission = await checkCameraPermission();
       if (!hasPermission) return;
 
-      // CRITICAL FIX: Always request audio with camera
       const stream = await requestCameraStream(currentFacingMode, true);
       if (!stream) return;
 
-      // Verify audio tracks in camera stream
       const audioTracks = stream.getAudioTracks();
       const videoTracks = stream.getVideoTracks();
       addLog(`📊 Camera stream: ${videoTracks.length} video, ${audioTracks.length} audio tracks`);
@@ -143,7 +141,6 @@ const CameraApp: React.FC = () => {
       addLog('🔄 Switching camera...');
       const newStream = await switchCamera();
       if (newStream) {
-        // Verify audio tracks after switch
         const audioTracks = newStream.getAudioTracks();
         addLog(`✅ Camera switched - Audio tracks: ${audioTracks.length}`);
       }
@@ -152,7 +149,8 @@ const CameraApp: React.FC = () => {
     }
   }, [isReady, switchCamera, addLog]);
 
-  const handleToggleRecording = useCallback(() => {
+  // MODIFIED: Toggle recording with lens restart
+  const handleToggleRecording = useCallback(async () => {
     const canvas = getCanvas();
     const stream = getStream();
     
@@ -161,35 +159,58 @@ const CameraApp: React.FC = () => {
       return;
     }
 
-    // CRITICAL FIX: Verify audio stream has audio tracks before recording
-    if (stream) {
-      const audioTracks = stream.getAudioTracks();
-      const videoTracks = stream.getVideoTracks();
-      
-      addLog(`📊 Pre-recording stream check: ${videoTracks.length} video, ${audioTracks.length} audio tracks`);
-      
-      if (audioTracks.length === 0) {
-        addLog('🔇 CRITICAL WARNING: No audio tracks in camera stream!');
-        addLog('📱 Recordings will be SILENT - check microphone permissions');
+    if (recordingState === 'recording') {
+      // Stop recording normally
+      if (recordingTime >= 3) {
+        toggleRecording(canvas, stream || undefined);
       } else {
-        audioTracks.forEach((track, index) => {
-          addLog(`🎤 Audio track ${index}: ${track.label || 'Unknown'}, state: ${track.readyState}, enabled: ${track.enabled}`);
-          
-          if (track.readyState !== 'live') {
-            addLog(`⚠️ Audio track ${index} not live: ${track.readyState}`);
-          }
-          if (!track.enabled) {
-            addLog(`⚠️ Audio track ${index} disabled`);
-          }
-        });
+        addLog(`⚠️ Recording too short (${recordingTime}s) - minimum 3 seconds required`);
       }
-    } else {
-      addLog('❌ No camera stream available for recording');
-      return;
-    }
+    } else if (recordingState === 'idle') {
+      // RESTART LENS BEFORE RECORDING
+      try {
+        addLog('🎭 Restarting lens for fresh recording...');
+        
+        const reloadSuccess = await reloadLens();
+        if (reloadSuccess) {
+          addLog('✅ Lens restarted successfully');
+          // Wait for lens to fully initialize
+          await new Promise(resolve => setTimeout(resolve, 500));
+        } else {
+          addLog('⚠️ Lens restart failed, continuing with current state');
+        }
+        
+      } catch (error) {
+        addLog(`❌ Lens restart error: ${error}, continuing anyway`);
+      }
 
-    toggleRecording(canvas, stream || undefined);
-  }, [getCanvas, getStream, toggleRecording, addLog]);
+      // Verify stream before recording
+      if (stream) {
+        const audioTracks = stream.getAudioTracks();
+        const videoTracks = stream.getVideoTracks();
+        
+        addLog(`📊 Pre-recording check: ${videoTracks.length} video, ${audioTracks.length} audio tracks`);
+        
+        if (audioTracks.length === 0) {
+          addLog('🔇 WARNING: No audio tracks - recording will be silent!');
+        } else {
+          audioTracks.forEach((track, index) => {
+            addLog(`🎤 Audio track ${index}: ${track.label || 'Unknown'}, state: ${track.readyState}, enabled: ${track.enabled}`);
+            
+            if (track.readyState !== 'live' || !track.enabled) {
+              addLog(`⚠️ Audio track ${index} not ready for recording`);
+            }
+          });
+        }
+      } else {
+        addLog('❌ No camera stream available for recording');
+        return;
+      }
+
+      // Start recording with fresh lens
+      toggleRecording(canvas, stream || undefined);
+    }
+  }, [getCanvas, getStream, toggleRecording, addLog, recordingState, recordingTime, reloadLens]);
 
   const handleReloadEffect = useCallback(async () => {
     if (!isReady) {
@@ -198,13 +219,13 @@ const CameraApp: React.FC = () => {
     }
     
     try {
-      addLog('🔄 Reloading AR effect...');
+      addLog('🔄 Manual lens reload...');
       const success = await reloadLens();
       
       if (success) {
-        addLog('✅ AR effect reloaded successfully');
+        addLog('✅ Lens reloaded successfully');
       } else {
-        addLog('❌ Failed to reload AR effect');
+        addLog('❌ Failed to reload lens');
       }
     } catch (error) {
       addLog(`❌ Reload error: ${error}`);
@@ -245,7 +266,7 @@ const CameraApp: React.FC = () => {
       if (stream) {
         const audioTracks = stream.getAudioTracks();
         addLog(`✅ Permission granted with ${audioTracks.length} audio tracks`);
-        stream.getTracks().forEach(track => track.stop());
+        stream.getTracks().forEach((track: MediaStreamTrack) => track.stop());
         initializeApp();
       }
     } catch (error) {
@@ -267,9 +288,9 @@ const CameraApp: React.FC = () => {
   if (!appReady) {
     const isInInstagram = isInstagramBrowser();
     
-    return (
-      <div className="fixed inset-0 bg-black flex items-center justify-center">
-        {isInInstagram ? (
+    if (isInInstagram) {
+      return (
+        <div className="fixed inset-0 bg-black flex items-center justify-center">
           <div className="text-center text-white p-6">
             <div className="text-6xl mb-6">🚀</div>
             <h2 className="text-2xl font-bold mb-4">Opening in Safari..</h2>
@@ -284,13 +305,15 @@ const CameraApp: React.FC = () => {
               If redirect fails, manually copy URL to Safari
             </p>
           </div>
-        ) : (
-          <LoadingScreen 
-            message="Web AR Netramaya"
-            subMessage="Checking browser compatibility..."
-          />
-        )}
-      </div>
+        </div>
+      );
+    }
+    
+    return (
+      <LoadingScreen 
+        message="Web AR Netramaya"
+        subMessage="Checking browser compatibility..."
+      />
     );
   }
 
