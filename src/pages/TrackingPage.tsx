@@ -69,7 +69,7 @@ const TrackingPage: React.FC = () => {
   }, [isAuthenticated, dateRange]);
   
   const handleAuthenticate = () => {
-    if (password === 'netramaya2023') {
+    if (password === '@SmileMeter2025') {
       setIsAuthenticated(true);
       localStorage.setItem('tracking_authenticated', 'true');
     } else {
