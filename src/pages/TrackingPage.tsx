@@ -87,7 +87,7 @@ const TrackingPage: React.FC = () => {
       <div className="fixed inset-0 bg-gradient-to-br from-purple-900 to-black flex items-center justify-center p-4">
         <div className="bg-white/10 backdrop-blur-md rounded-xl p-6 w-full max-w-md text-white">
           <h1 className="text-2xl font-bold mb-6 text-center">
-            Web AR Netramaya
+            Smile Meter IG Dashboard
             <div className="text-base font-normal text-white/60">Analytics Dashboard</div>
           </h1>
           
@@ -138,7 +138,7 @@ const TrackingPage: React.FC = () => {
       <div className="max-w-6xl mx-auto">
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-2xl md:text-3xl font-bold">
-            Web AR Netramaya
+          Smile Meter IG Dashboard
             <span className="block text-sm font-normal text-white/60">Analytics Dashboard</span>
           </h1>
           
