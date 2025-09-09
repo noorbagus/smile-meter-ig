@@ -6,338 +6,438 @@ import { inject } from '@vercel/analytics';
 inject();
 
 interface AnalyticsData {
-  pageViews: number;
-  recordingStarted: number;
-  recordingCompleted: number;
-  shareAttempt: number;
-  shareCompleted: number;
-  loading: boolean;
-  error: string | null;
+ pageViews: number;
+ recordingStarted: number;
+ recordingCompleted: number;
+ shareAttempt: number;
+ shareCompleted: number;
+ loading: boolean;
+ error: string | null;
 }
 
 const TrackingPage: React.FC = () => {
-  const [data, setData] = useState<AnalyticsData>({
-    pageViews: 0,
-    recordingStarted: 0,
-    recordingCompleted: 0,
-    shareAttempt: 0,
-    shareCompleted: 0,
-    loading: true,
-    error: null
-  });
-  
-  const [dateRange, setDateRange] = useState<string>('7d');
-  const [password, setPassword] = useState<string>('');
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
-  
-  // Check authentication status
-  useEffect(() => {
-    const savedAuth = localStorage.getItem('tracking_authenticated');
-    if (savedAuth === 'true') {
-      setIsAuthenticated(true);
-    }
-  }, []);
+ const [data, setData] = useState<AnalyticsData>({
+   pageViews: 0,
+   recordingStarted: 0,
+   recordingCompleted: 0,
+   shareAttempt: 0,
+   shareCompleted: 0,
+   loading: true,
+   error: null
+ });
+ 
+ const [dateRange, setDateRange] = useState<string>('7d');
+ const [password, setPassword] = useState<string>('');
+ const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+ 
+ // Check authentication status
+ useEffect(() => {
+   const savedAuth = localStorage.getItem('tracking_authenticated');
+   if (savedAuth === 'true') {
+     setIsAuthenticated(true);
+   }
+ }, []);
 
-  // Mock data for demo purposes - in production, this would call Vercel API
-  useEffect(() => {
-    if (isAuthenticated) {
-      setData({
-        ...data,
-        loading: true
-      });
-      
-      // Simulate API call
-      setTimeout(() => {
-        // This would be actual API data in production
-        const mockData = {
-          pageViews: Math.floor(Math.random() * 1000) + 500,
-          recordingStarted: Math.floor(Math.random() * 400) + 200,
-          recordingCompleted: Math.floor(Math.random() * 300) + 100,
-          shareAttempt: Math.floor(Math.random() * 150) + 50,
-          shareCompleted: Math.floor(Math.random() * 100) + 20,
-        };
-        
-        setData({
-          ...mockData,
-          loading: false,
-          error: null
-        });
-      }, 1000);
-    }
-  }, [isAuthenticated, dateRange]);
-  
-  const handleAuthenticate = () => {
-    // Simple authentication for demo
-    if (password === 'netramaya2023') {
-      setIsAuthenticated(true);
-      localStorage.setItem('tracking_authenticated', 'true');
-    } else {
-      setData({
-        ...data,
-        error: 'Invalid password'
-      });
-    }
-  };
-  
-  const handleLogout = () => {
-    setIsAuthenticated(false);
-    localStorage.removeItem('tracking_authenticated');
-  };
-  
-  if (!isAuthenticated) {
-    return (
-      <div className="fixed inset-0 bg-gradient-to-br from-purple-900 to-black flex items-center justify-center p-4">
-        <div className="bg-white/10 backdrop-blur-md rounded-xl p-6 w-full max-w-md text-white">
-          <h1 className="text-2xl font-bold mb-6 text-center">
-            Web AR Netramaya
-            <div className="text-base font-normal text-white/60">Analytics Dashboard</div>
-          </h1>
-          
-          {data.error && (
-            <div className="bg-red-500/20 border border-red-500/30 rounded-lg p-3 mb-4 text-sm">
-              {data.error}
-            </div>
-          )}
-          
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm text-white/70 mb-1">Password</label>
-              <input 
-                type="password"
-                className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-white"
-                placeholder="Enter dashboard password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && handleAuthenticate()}
-              />
-            </div>
-            
-            <button
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg font-medium transition-colors"
-              onClick={handleAuthenticate}
-            >
-              Access Dashboard
-            </button>
-            
-            <div className="text-center">
-              <Link to="/" className="text-sm text-white/60 hover:text-white">
-                &larr; Back to Camera
-              </Link>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-  
-  // Calculate conversion rates
-  const recordingRate = data.pageViews ? Math.round((data.recordingStarted / data.pageViews) * 100) : 0;
-  const completionRate = data.recordingStarted ? Math.round((data.recordingCompleted / data.recordingStarted) * 100) : 0;
-  const shareRate = data.recordingCompleted ? Math.round((data.shareAttempt / data.recordingCompleted) * 100) : 0;
-  const shareSuccessRate = data.shareAttempt ? Math.round((data.shareCompleted / data.shareAttempt) * 100) : 0;
-  
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-900 to-black text-white p-4 md:p-6">
-      <div className="max-w-6xl mx-auto">
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-2xl md:text-3xl font-bold">
-            Web AR Netramaya
-            <span className="block text-sm font-normal text-white/60">Analytics Dashboard</span>
-          </h1>
-          
-          <div className="flex items-center gap-4">
-            <div className="hidden md:flex items-center gap-2">
-              <select
-                className="bg-white/10 border border-white/20 rounded-lg px-3 py-1.5 text-sm"
-                value={dateRange}
-                onChange={(e) => setDateRange(e.target.value)}
-              >
-                <option value="1d">Last 24 hours</option>
-                <option value="7d">Last 7 days</option>
-                <option value="30d">Last 30 days</option>
-                <option value="all">All time</option>
-              </select>
-            </div>
-            
-            <div className="flex items-center gap-2">
-              <Link to="/" className="px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded-lg text-sm transition-colors">
-                Go to App
-              </Link>
-              <button 
-                onClick={handleLogout}
-                className="px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded-lg text-sm transition-colors"
-              >
-                Logout
-              </button>
-            </div>
-          </div>
-        </div>
-        
-        {data.loading ? (
-          <div className="flex justify-center items-center h-64">
-            <div className="flex flex-col items-center">
-              <div className="w-10 h-10 border-2 border-blue-500 border-t-transparent rounded-full animate-spin mb-4"></div>
-              <p className="text-white/60">Loading analytics data...</p>
-            </div>
-          </div>
-        ) : (
-          <>
-            {/* Main stats cards */}
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
-              <StatCard
-                title="Visitors"
-                value={data.pageViews}
-                icon="👁️"
-                className="bg-gradient-to-br from-blue-600/30 to-blue-800/30"
-              />
-              <StatCard
-                title="Recording Started"
-                value={data.recordingStarted}
-                icon="🎬"
-                className="bg-gradient-to-br from-green-600/30 to-green-800/30"
-              />
-              <StatCard
-                title="Recording Completed"
-                value={data.recordingCompleted}
-                icon="✅"
-                className="bg-gradient-to-br from-yellow-600/30 to-yellow-800/30"
-              />
-              <StatCard
-                title="Share Attempts"
-                value={data.shareAttempt}
-                icon="📤"
-                className="bg-gradient-to-br from-purple-600/30 to-purple-800/30"
-              />
-              <StatCard
-                title="Share Completed"
-                value={data.shareCompleted}
-                icon="🚀"
-                className="bg-gradient-to-br from-pink-600/30 to-pink-800/30"
-              />
-            </div>
-            
-            {/* Conversion rates */}
-            <h2 className="text-xl font-semibold mb-4">Conversion Rates</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-              <ConversionCard
-                title="Visit → Record"
-                percentage={recordingRate}
-                description={`${data.recordingStarted} of ${data.pageViews} visitors started recording`}
-              />
-              <ConversionCard
-                title="Start → Complete"
-                percentage={completionRate}
-                description={`${data.recordingCompleted} of ${data.recordingStarted} recordings completed`}
-              />
-              <ConversionCard
-                title="Complete → Share"
-                percentage={shareRate}
-                description={`${data.shareAttempt} of ${data.recordingCompleted} recordings shared`}
-              />
-              <ConversionCard
-                title="Share Success Rate"
-                percentage={shareSuccessRate}
-                description={`${data.shareCompleted} of ${data.shareAttempt} shares successful`}
-              />
-            </div>
-            
-            {/* Funnel visualization */}
-            <h2 className="text-xl font-semibold mb-4">User Journey Funnel</h2>
-            <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6 mb-8">
-              <div className="flex flex-col md:flex-row items-stretch gap-2 md:h-32">
-                <FunnelStep
-                  label="Visitors"
-                  value={data.pageViews}
-                  percentage={100}
-                  color="from-blue-500 to-blue-600"
-                />
-                <FunnelStep
-                  label="Started Recording"
-                  value={data.recordingStarted}
-                  percentage={(data.recordingStarted / data.pageViews) * 100}
-                  color="from-green-500 to-green-600"
-                />
-                <FunnelStep
-                  label="Completed Recording"
-                  value={data.recordingCompleted}
-                  percentage={(data.recordingCompleted / data.pageViews) * 100}
-                  color="from-yellow-500 to-yellow-600"
-                />
-                <FunnelStep
-                  label="Attempted Share"
-                  value={data.shareAttempt}
-                  percentage={(data.shareAttempt / data.pageViews) * 100}
-                  color="from-purple-500 to-purple-600"
-                />
-                <FunnelStep
-                  label="Completed Share"
-                  value={data.shareCompleted}
-                  percentage={(data.shareCompleted / data.pageViews) * 100}
-                  color="from-pink-500 to-pink-600"
-                />
-              </div>
-            </div>
-            
-            <div className="text-center text-white/50 text-sm mt-16">
-              <p>Data refreshes every 24 hours. Last updated: {new Date().toLocaleDateString()}</p>
-              <p className="mt-1">Built with Vercel Analytics</p>
-            </div>
-          </>
-        )}
-      </div>
-    </div>
-  );
+ // Fetch real analytics data
+ useEffect(() => {
+   if (isAuthenticated) {
+     setData({
+       ...data,
+       loading: true
+     });
+     
+     const fetchAnalyticsData = async () => {
+       try {
+         // Get analytics token from environment variable
+         const token = import.meta.env.VITE_VERCEL_ANALYTICS_TOKEN;
+         
+         if (!token) {
+           throw new Error('Analytics token not found');
+         }
+         
+         // Get project ID from URL or environment variable
+         const projectId = import.meta.env.VITE_VERCEL_PROJECT_ID;
+         
+         if (!projectId) {
+           throw new Error('Project ID not found');
+         }
+         
+         // Calculate date range
+         let since: string;
+         const now = new Date();
+         
+         switch (dateRange) {
+           case '1d':
+             since = new Date(now.setDate(now.getDate() - 1)).toISOString();
+             break;
+           case '7d':
+             since = new Date(now.setDate(now.getDate() - 7)).toISOString();
+             break;
+           case '30d':
+             since = new Date(now.setDate(now.getDate() - 30)).toISOString();
+             break;
+           case 'all':
+             since = new Date(2020, 0, 1).toISOString();
+             break;
+           default:
+             since = new Date(now.setDate(now.getDate() - 7)).toISOString();
+         }
+         
+         // Fetch pageviews
+         const pageViewsResponse = await fetch(`https://api.vercel.com/v1/projects/${projectId}/analytics/pageviews?since=${since}`, {
+           headers: {
+             'Authorization': `Bearer ${token}`
+           }
+         });
+         
+         if (!pageViewsResponse.ok) {
+           throw new Error('Failed to fetch pageviews');
+         }
+         
+         const pageViewsData = await pageViewsResponse.json();
+         
+         // Fetch custom events
+         const eventsResponse = await fetch(`https://api.vercel.com/v1/projects/${projectId}/analytics/events?since=${since}`, {
+           headers: {
+             'Authorization': `Bearer ${token}`
+           }
+         });
+         
+         if (!eventsResponse.ok) {
+           throw new Error('Failed to fetch events');
+         }
+         
+         const eventsData = await eventsResponse.json();
+         
+         // Process the data
+         const pageViews = pageViewsData.pageviews || 0;
+         
+         // Get event counts
+         const recordingStarted = eventsData.events?.find((e: any) => e.name === 'recording_started')?.count || 0;
+         const recordingCompleted = eventsData.events?.find((e: any) => e.name === 'recording_completed')?.count || 0;
+         const shareAttempt = eventsData.events?.find((e: any) => e.name === 'share_attempt')?.count || 0;
+         const shareCompleted = eventsData.events?.find((e: any) => e.name === 'share_completed')?.count || 0;
+         
+         setData({
+           pageViews,
+           recordingStarted,
+           recordingCompleted,
+           shareAttempt,
+           shareCompleted,
+           loading: false,
+           error: null
+         });
+         
+       } catch (error) {
+         console.error('Analytics fetch error:', error);
+         setData({
+           ...data,
+           loading: false,
+           error: error instanceof Error ? error.message : 'Failed to fetch analytics data'
+         });
+         
+         // Fall back to mock data in development or if API fails
+         if (import.meta.env.DEV || !import.meta.env.VITE_VERCEL_ANALYTICS_TOKEN) {
+           // Mock data for development
+           const mockData = {
+             pageViews: Math.floor(Math.random() * 1000) + 500,
+             recordingStarted: Math.floor(Math.random() * 400) + 200,
+             recordingCompleted: Math.floor(Math.random() * 300) + 100,
+             shareAttempt: Math.floor(Math.random() * 150) + 50,
+             shareCompleted: Math.floor(Math.random() * 100) + 20,
+           };
+           
+           setData({
+             ...mockData,
+             loading: false,
+             error: import.meta.env.DEV ? 'Using mock data for development' : 'API error, showing mock data'
+           });
+         }
+       }
+     };
+     
+     fetchAnalyticsData();
+   }
+ }, [isAuthenticated, dateRange]);
+ 
+ const handleAuthenticate = () => {
+   // Simple authentication for demo
+   if (password === 'netramaya2023') {
+     setIsAuthenticated(true);
+     localStorage.setItem('tracking_authenticated', 'true');
+   } else {
+     setData({
+       ...data,
+       error: 'Invalid password'
+     });
+   }
+ };
+ 
+ const handleLogout = () => {
+   setIsAuthenticated(false);
+   localStorage.removeItem('tracking_authenticated');
+ };
+ 
+ if (!isAuthenticated) {
+   return (
+     <div className="fixed inset-0 bg-gradient-to-br from-purple-900 to-black flex items-center justify-center p-4">
+       <div className="bg-white/10 backdrop-blur-md rounded-xl p-6 w-full max-w-md text-white">
+         <h1 className="text-2xl font-bold mb-6 text-center">
+           Web AR Netramaya
+           <div className="text-base font-normal text-white/60">Analytics Dashboard</div>
+         </h1>
+         
+         {data.error && (
+           <div className="bg-red-500/20 border border-red-500/30 rounded-lg p-3 mb-4 text-sm">
+             {data.error}
+           </div>
+         )}
+         
+         <div className="space-y-4">
+           <div>
+             <label className="block text-sm text-white/70 mb-1">Password</label>
+             <input 
+               type="password"
+               className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-white"
+               placeholder="Enter dashboard password"
+               value={password}
+               onChange={(e) => setPassword(e.target.value)}
+               onKeyPress={(e) => e.key === 'Enter' && handleAuthenticate()}
+             />
+           </div>
+           
+           <button
+             className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg font-medium transition-colors"
+             onClick={handleAuthenticate}
+           >
+             Access Dashboard
+           </button>
+           
+           <div className="text-center">
+             <Link to="/" className="text-sm text-white/60 hover:text-white">
+               &larr; Back to Camera
+             </Link>
+           </div>
+         </div>
+       </div>
+     </div>
+   );
+ }
+ 
+ // Calculate conversion rates
+ const recordingRate = data.pageViews ? Math.round((data.recordingStarted / data.pageViews) * 100) : 0;
+ const completionRate = data.recordingStarted ? Math.round((data.recordingCompleted / data.recordingStarted) * 100) : 0;
+ const shareRate = data.recordingCompleted ? Math.round((data.shareAttempt / data.recordingCompleted) * 100) : 0;
+ const shareSuccessRate = data.shareAttempt ? Math.round((data.shareCompleted / data.shareAttempt) * 100) : 0;
+ 
+ return (
+   <div className="min-h-screen bg-gradient-to-br from-purple-900 to-black text-white p-4 md:p-6">
+     <div className="max-w-6xl mx-auto">
+       <div className="flex justify-between items-center mb-8">
+         <h1 className="text-2xl md:text-3xl font-bold">
+           Web AR Netramaya
+           <span className="block text-sm font-normal text-white/60">Analytics Dashboard</span>
+         </h1>
+         
+         <div className="flex items-center gap-4">
+           <div className="hidden md:flex items-center gap-2">
+             <select
+               className="bg-white/10 border border-white/20 rounded-lg px-3 py-1.5 text-sm"
+               value={dateRange}
+               onChange={(e) => setDateRange(e.target.value)}
+             >
+               <option value="1d">Last 24 hours</option>
+               <option value="7d">Last 7 days</option>
+               <option value="30d">Last 30 days</option>
+               <option value="all">All time</option>
+             </select>
+           </div>
+           
+           <div className="flex items-center gap-2">
+             <Link to="/" className="px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded-lg text-sm transition-colors">
+               Go to App
+             </Link>
+             <button 
+               onClick={handleLogout}
+               className="px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded-lg text-sm transition-colors"
+             >
+               Logout
+             </button>
+           </div>
+         </div>
+       </div>
+       
+       {data.loading ? (
+         <div className="flex justify-center items-center h-64">
+           <div className="flex flex-col items-center">
+             <div className="w-10 h-10 border-2 border-blue-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+             <p className="text-white/60">Loading analytics data...</p>
+           </div>
+         </div>
+       ) : (
+         <>
+           {data.error && (
+             <div className="bg-yellow-500/20 border border-yellow-500/30 rounded-lg p-3 mb-6 text-sm">
+               <strong>Note:</strong> {data.error}
+             </div>
+           )}
+           
+           {/* Main stats cards */}
+           <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
+             <StatCard
+               title="Visitors"
+               value={data.pageViews}
+               icon="👁️"
+               className="bg-gradient-to-br from-blue-600/30 to-blue-800/30"
+             />
+             <StatCard
+               title="Recording Started"
+               value={data.recordingStarted}
+               icon="🎬"
+               className="bg-gradient-to-br from-green-600/30 to-green-800/30"
+             />
+             <StatCard
+               title="Recording Completed"
+               value={data.recordingCompleted}
+               icon="✅"
+               className="bg-gradient-to-br from-yellow-600/30 to-yellow-800/30"
+             />
+             <StatCard
+               title="Share Attempts"
+               value={data.shareAttempt}
+               icon="📤"
+               className="bg-gradient-to-br from-purple-600/30 to-purple-800/30"
+             />
+             <StatCard
+               title="Share Completed"
+               value={data.shareCompleted}
+               icon="🚀"
+               className="bg-gradient-to-br from-pink-600/30 to-pink-800/30"
+             />
+           </div>
+           
+           {/* Conversion rates */}
+           <h2 className="text-xl font-semibold mb-4">Conversion Rates</h2>
+           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+             <ConversionCard
+               title="Visit → Record"
+               percentage={recordingRate}
+               description={`${data.recordingStarted} of ${data.pageViews} visitors started recording`}
+             />
+             <ConversionCard
+               title="Start → Complete"
+               percentage={completionRate}
+               description={`${data.recordingCompleted} of ${data.recordingStarted} recordings completed`}
+             />
+             <ConversionCard
+               title="Complete → Share"
+               percentage={shareRate}
+               description={`${data.shareAttempt} of ${data.recordingCompleted} recordings shared`}
+             />
+             <ConversionCard
+               title="Share Success Rate"
+               percentage={shareSuccessRate}
+               description={`${data.shareCompleted} of ${data.shareAttempt} shares successful`}
+             />
+           </div>
+           
+           {/* Funnel visualization */}
+           <h2 className="text-xl font-semibold mb-4">User Journey Funnel</h2>
+           <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6 mb-8">
+             <div className="flex flex-col md:flex-row items-stretch gap-2 md:h-32">
+               <FunnelStep
+                 label="Visitors"
+                 value={data.pageViews}
+                 percentage={100}
+                 color="from-blue-500 to-blue-600"
+               />
+               <FunnelStep
+                 label="Started Recording"
+                 value={data.recordingStarted}
+                 percentage={(data.recordingStarted / data.pageViews) * 100}
+                 color="from-green-500 to-green-600"
+               />
+               <FunnelStep
+                 label="Completed Recording"
+                 value={data.recordingCompleted}
+                 percentage={(data.recordingCompleted / data.pageViews) * 100}
+                 color="from-yellow-500 to-yellow-600"
+               />
+               <FunnelStep
+                 label="Attempted Share"
+                 value={data.shareAttempt}
+                 percentage={(data.shareAttempt / data.pageViews) * 100}
+                 color="from-purple-500 to-purple-600"
+               />
+               <FunnelStep
+                 label="Completed Share"
+                 value={data.shareCompleted}
+                 percentage={(data.shareCompleted / data.pageViews) * 100}
+                 color="from-pink-500 to-pink-600"
+               />
+             </div>
+           </div>
+           
+           <div className="text-center text-white/50 text-sm mt-16">
+             <p>Data range: {dateRange === '1d' ? 'Last 24 hours' : dateRange === '7d' ? 'Last 7 days' : dateRange === '30d' ? 'Last 30 days' : 'All time'}</p>
+             <p className="mt-1">Last updated: {new Date().toLocaleString()}</p>
+           </div>
+         </>
+       )}
+     </div>
+   </div>
+ );
 };
 
 // Helper components
 const StatCard: React.FC<{
-  title: string;
-  value: number;
-  icon: string;
-  className?: string;
+ title: string;
+ value: number;
+ icon: string;
+ className?: string;
 }> = ({ title, value, icon, className }) => (
-  <div className={`rounded-xl p-4 backdrop-blur-md border border-white/10 ${className}`}>
-    <div className="text-2xl mb-2">{icon}</div>
-    <h3 className="text-sm text-white/70 mb-1">{title}</h3>
-    <div className="text-2xl md:text-3xl font-bold">{value.toLocaleString()}</div>
-  </div>
+ <div className={`rounded-xl p-4 backdrop-blur-md border border-white/10 ${className}`}>
+   <div className="text-2xl mb-2">{icon}</div>
+   <h3 className="text-sm text-white/70 mb-1">{title}</h3>
+   <div className="text-2xl md:text-3xl font-bold">{value.toLocaleString()}</div>
+ </div>
 );
 
 const ConversionCard: React.FC<{
-  title: string;
-  percentage: number;
-  description: string;
+ title: string;
+ percentage: number;
+ description: string;
 }> = ({ title, percentage, description }) => (
-  <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-4">
-    <h3 className="text-sm text-white/70 mb-1">{title}</h3>
-    <div className="text-2xl font-bold mb-1">{percentage}%</div>
-    <div className="w-full bg-white/10 rounded-full h-2 mb-2">
-      <div 
-        className="bg-gradient-to-r from-green-400 to-blue-500 h-2 rounded-full"
-        style={{ width: `${Math.min(percentage, 100)}%` }}
-      ></div>
-    </div>
-    <p className="text-xs text-white/60">{description}</p>
-  </div>
+ <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-4">
+   <h3 className="text-sm text-white/70 mb-1">{title}</h3>
+   <div className="text-2xl font-bold mb-1">{percentage}%</div>
+   <div className="w-full bg-white/10 rounded-full h-2 mb-2">
+     <div 
+       className="bg-gradient-to-r from-green-400 to-blue-500 h-2 rounded-full"
+       style={{ width: `${Math.min(percentage, 100)}%` }}
+     ></div>
+   </div>
+   <p className="text-xs text-white/60">{description}</p>
+ </div>
 );
 
 const FunnelStep: React.FC<{
-  label: string;
-  value: number;
-  percentage: number;
-  color: string;
+ label: string;
+ value: number;
+ percentage: number;
+ color: string;
 }> = ({ label, value, percentage, color }) => (
-  <div className="flex-1 flex flex-col">
-    <div className="text-xs text-white/70 mb-1">{label}</div>
-    <div className="text-sm font-medium mb-1">{value.toLocaleString()}</div>
-    <div className="flex-1 bg-white/5 rounded-lg overflow-hidden">
-      <div
-        className={`h-full bg-gradient-to-b ${color} transition-all duration-500`}
-        style={{ height: `${Math.max(percentage, 5)}%` }}
-      ></div>
-    </div>
-    <div className="text-xs text-white/60 mt-1">{Math.round(percentage)}%</div>
-  </div>
+ <div className="flex-1 flex flex-col">
+   <div className="text-xs text-white/70 mb-1">{label}</div>
+   <div className="text-sm font-medium mb-1">{value.toLocaleString()}</div>
+   <div className="flex-1 bg-white/5 rounded-lg overflow-hidden">
+     <div
+       className={`h-full bg-gradient-to-b ${color} transition-all duration-500`}
+       style={{ height: `${Math.max(percentage, 5)}%` }}
+     ></div>
+   </div>
+   <div className="text-xs text-white/60 mt-1">{Math.round(percentage)}%</div>
+ </div>
 );
 
 export default TrackingPage;
