@@ -278,7 +278,7 @@ const TrackingPage: React.FC = () => {
             <div className="text-center text-white/50 text-sm mt-16">
               <p>Data range: {dateRange === '1d' ? 'Last 24 hours' : dateRange === '7d' ? 'Last 7 days' : 'Last 30 days'}</p>
               <p className="mt-1">Last updated: {new Date().toLocaleString()}</p>
-              <p className="mt-1">Powered by Supabase Analytics</p>
+              <p className="mt-1">Powered by Netramaya Technology</p>
             </div>
           </>
         )}
