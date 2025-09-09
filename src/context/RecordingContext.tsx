@@ -178,7 +178,7 @@ export const RecordingProvider: React.FC<RecordingProviderProps> = ({
     }
     
     try {
-      // Track share attempt
+      // Track share attempt only
       trackEvent('share_attempt', {
         videoDuration: (recordedVideo as any).recordingDuration || recordingTime || 0,
         videoFormat: recordedVideo.type.includes('mp4') ? 'mp4' : 'webm'
@@ -206,13 +206,6 @@ export const RecordingProvider: React.FC<RecordingProviderProps> = ({
       
       addLog('📱 Attempting native share...');
       const shareSuccess = await videoProcessor.shareVideo(processedFile);
-      
-      // Track share completion
-      trackEvent('share_completed', {
-        success: shareSuccess,
-        videoDuration: recordingDuration,
-        videoFormat: processedFile.type.includes('mp4') ? 'mp4' : 'webm'
-      }, sessionId);
       
       if (shareSuccess) {
         addLog('✅ Video shared successfully');

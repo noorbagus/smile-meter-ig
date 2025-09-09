@@ -321,6 +321,7 @@ const CameraApp: React.FC = () => {
           recordedVideo={recordedVideo}
           onClose={handleClosePreview}
           onProcessAndShare={handleProcessAndShare}
+          addLog={addLog}
         />
         
         <RenderingModal

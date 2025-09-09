@@ -7,7 +7,6 @@ interface AnalyticsData {
   recordingStarted: number;
   recordingCompleted: number;
   shareAttempt: number;
-  shareCompleted: number;
   videoDownloaded: number;
   loading: boolean;
   error: string | null;
@@ -19,7 +18,6 @@ const TrackingPage: React.FC = () => {
     recordingStarted: 0,
     recordingCompleted: 0,
     shareAttempt: 0,
-    shareCompleted: 0,
     videoDownloaded: 0,
     loading: true,
     error: null
@@ -51,7 +49,6 @@ const TrackingPage: React.FC = () => {
             recordingStarted: analyticsData.recordingStarted,
             recordingCompleted: analyticsData.recordingCompleted,
             shareAttempt: analyticsData.shareAttempt,
-            shareCompleted: analyticsData.shareCompleted,
             videoDownloaded: analyticsData.videoDownloaded,
             loading: false,
             error: null
@@ -135,7 +132,6 @@ const TrackingPage: React.FC = () => {
   const recordingRate = data.pageViews ? Math.round((data.recordingStarted / data.pageViews) * 100) : 0;
   const completionRate = data.recordingStarted ? Math.round((data.recordingCompleted / data.recordingStarted) * 100) : 0;
   const shareRate = data.recordingCompleted ? Math.round((data.shareAttempt / data.recordingCompleted) * 100) : 0;
-  const shareSuccessRate = data.shareAttempt ? Math.round((data.shareCompleted / data.shareAttempt) * 100) : 0;
   
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-900 to-black text-white p-4 md:p-6">
@@ -188,8 +184,8 @@ const TrackingPage: React.FC = () => {
               </div>
             )}
             
-            {/* Main stats cards */}
-            <div className="grid grid-cols-2 md:grid-cols-6 gap-4 mb-8">
+            {/* Main stats cards - Changed from 6 to 5 columns */}
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
               <StatCard
                 title="Visitors"
                 value={data.pageViews}
@@ -209,16 +205,10 @@ const TrackingPage: React.FC = () => {
                 className="bg-gradient-to-br from-yellow-600/30 to-yellow-800/30"
               />
               <StatCard
-                title="Share Attempts"
+                title="Share"
                 value={data.shareAttempt}
                 icon="📤"
                 className="bg-gradient-to-br from-purple-600/30 to-purple-800/30"
-              />
-              <StatCard
-                title="Share Completed"
-                value={data.shareCompleted}
-                icon="🚀"
-                className="bg-gradient-to-br from-pink-600/30 to-pink-800/30"
               />
               <StatCard
                 title="Downloads"
@@ -228,9 +218,9 @@ const TrackingPage: React.FC = () => {
               />
             </div>
             
-            {/* Conversion rates */}
+            {/* Conversion rates - Removed Share Success Rate */}
             <h2 className="text-xl font-semibold mb-4">Conversion Rates</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
               <ConversionCard
                 title="Visit → Record"
                 percentage={recordingRate}
@@ -246,14 +236,9 @@ const TrackingPage: React.FC = () => {
                 percentage={shareRate}
                 description={`${data.shareAttempt} of ${data.recordingCompleted} recordings shared`}
               />
-              <ConversionCard
-                title="Share Success Rate"
-                percentage={shareSuccessRate}
-                description={`${data.shareCompleted} of ${data.shareAttempt} shares successful`}
-              />
             </div>
             
-            {/* Funnel visualization */}
+            {/* Funnel visualization - Updated labels */}
             <h2 className="text-xl font-semibold mb-4">User Journey Funnel</h2>
             <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6 mb-8">
               <div className="flex flex-col md:flex-row items-stretch gap-2 md:h-32">
@@ -276,16 +261,10 @@ const TrackingPage: React.FC = () => {
                   color="from-yellow-500 to-yellow-600"
                 />
                 <FunnelStep
-                  label="Attempted Share"
+                  label="Share"
                   value={data.shareAttempt}
                   percentage={(data.shareAttempt / Math.max(data.pageViews, 1)) * 100}
                   color="from-purple-500 to-purple-600"
-                />
-                <FunnelStep
-                  label="Completed Share"
-                  value={data.shareCompleted}
-                  percentage={(data.shareCompleted / Math.max(data.pageViews, 1)) * 100}
-                  color="from-pink-500 to-pink-600"
                 />
                 <FunnelStep
                   label="Downloaded"

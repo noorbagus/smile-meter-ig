@@ -1,39 +1,91 @@
-// src/components/video/VideoPreview.tsx - Fixed with RecordingContext
+// src/components/video/VideoPreview.tsx - Fixed download tracking
 import React from 'react';
 import { X, Download, Send } from 'lucide-react';
 import { ControlButton } from '../ui';
-import { useRecordingContext } from '../../context';
+import { trackEvent } from '../../utils/supabase';
 import { checkSocialMediaCompatibility } from '../../utils/androidRecorderFix';
 
 interface VideoPreviewProps {
   recordedVideo: Blob | File;
   onClose: () => void;
   onProcessAndShare: () => void;
+  addLog: (message: string) => void;
 }
 
 export const VideoPreview: React.FC<VideoPreviewProps> = ({
   recordedVideo,
   onClose,
-  onProcessAndShare
+  onProcessAndShare,
+  addLog
 }) => {
-  const { downloadVideo } = useRecordingContext();
-  
   const isAndroidRecording = (recordedVideo as any).isAndroidRecording;
   const isiOSRecording = (recordedVideo as any).isiOSRecording;
   const duration = (recordedVideo as any).recordingDuration;
   const compatibility = checkSocialMediaCompatibility(recordedVideo as File);
   const platform = isAndroidRecording ? 'Android' : isiOSRecording ? 'iPhone' : 'Desktop';
 
+  // Get session ID for tracking
+  const getSessionId = () => {
+    let sessionId = localStorage.getItem('analytics_session');
+    if (!sessionId) {
+      sessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      localStorage.setItem('analytics_session', sessionId);
+    }
+    return sessionId;
+  };
+
   const handleShare = () => {
     onProcessAndShare();
     onClose();
   };
 
-  const handleDownload = () => {
-    downloadVideo(); // Uses RecordingContext method with tracking
-    setTimeout(() => {
-      onClose();
-    }, 500);
+  const handleDownload = async () => {
+    try {
+      // Track download immediately when button clicked
+      const sessionId = getSessionId();
+      await trackEvent('video_downloaded', {
+        videoDuration: duration || 0,
+        videoFormat: recordedVideo.type.includes('mp4') ? 'mp4' : 'webm',
+        platform: platform,
+        fileSize: recordedVideo.size
+      }, sessionId);
+      
+      addLog(`📊 Download tracked: ${duration}s ${platform} video`);
+      
+      // Download the file
+      const url = URL.createObjectURL(recordedVideo);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `ar-video-${Date.now()}${recordedVideo.type.includes('mp4') ? '.mp4' : '.webm'}`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      
+      addLog('💾 Video download initiated');
+      
+      // Close preview after short delay
+      setTimeout(() => {
+        onClose();
+      }, 500);
+      
+    } catch (error) {
+      addLog(`❌ Download tracking failed: ${error}`);
+      
+      // Still download the file even if tracking fails
+      const url = URL.createObjectURL(recordedVideo);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `ar-video-${Date.now()}${recordedVideo.type.includes('mp4') ? '.mp4' : '.webm'}`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      
+      setTimeout(() => {
+        onClose();
+      }, 500);
+    }
   };
 
   return (

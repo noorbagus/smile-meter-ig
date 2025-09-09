@@ -1,7 +1,7 @@
-// src/utils/VideoProcessor.ts - Tambahkan tracking
+// src/utils/VideoProcessor.ts - Remove share completion tracking
 import fixWebmDuration from 'fix-webm-duration';
 import { detectAndroid } from './androidRecorderFix';
-import { track } from '@vercel/analytics'; // Tambahkan import
+import { track } from '@vercel/analytics';
 
 export interface ProcessingProgress {
  percent: number;
@@ -242,13 +242,6 @@ export class VideoProcessor {
 
  async shareVideo(file: File): Promise<boolean> {
    try {
-     // Track share attempt with native API
-     track('native_share_attempt', {
-       format: file.type.includes('mp4') ? 'mp4' : 'webm',
-       duration: (file as any).recordingDuration || 0,
-       size: file.size
-     });
-
      if (navigator.share && navigator.canShare?.({ files: [file] })) {
        await navigator.share({
          files: [file],
@@ -256,21 +249,12 @@ export class VideoProcessor {
          text: `Check out this ${(file as any).recordingDuration}s AR video! 📱 Instagram ready!`
        });
 
-       // Track successful share
-       track('native_share_success');
        return true;
      } else {
-       // Track fallback to download
-       track('share_fallback_to_download');
        this.downloadFile(file);
        return false;
      }
    } catch (error) {
-     // Track share error/cancellation
-     track('share_error_or_cancelled', {
-       error: error instanceof Error ? error.message : 'Unknown error'
-     });
-
      this.addLog(`❌ Share failed: ${error}`);
      this.downloadFile(file);
      return false;

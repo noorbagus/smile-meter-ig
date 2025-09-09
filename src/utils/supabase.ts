@@ -118,7 +118,6 @@ export const getAnalyticsData = async (dateRange: string = '7d') => {
       recordingStarted: eventCounts.recording_started || 0,
       recordingCompleted: eventCounts.recording_completed || 0,
       shareAttempt: eventCounts.share_attempt || 0,
-      shareCompleted: eventCounts.share_completed || 0,
       videoDownloaded: eventCounts.video_downloaded || 0
     };
   } catch (error) {
@@ -128,7 +127,6 @@ export const getAnalyticsData = async (dateRange: string = '7d') => {
       recordingStarted: 0,
       recordingCompleted: 0,
       shareAttempt: 0,
-      shareCompleted: 0,
       videoDownloaded: 0
     };
   }
