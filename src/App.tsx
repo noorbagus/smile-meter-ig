@@ -320,7 +320,6 @@ const CameraApp: React.FC = () => {
         <VideoPreview
           recordedVideo={recordedVideo}
           onClose={handleClosePreview}
-          onDownload={handleDownload}
           onProcessAndShare={handleProcessAndShare}
         />
         

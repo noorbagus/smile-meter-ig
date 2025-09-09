@@ -1,22 +1,23 @@
-// src/components/video/VideoPreview.tsx - Share & Download buttons
+// src/components/video/VideoPreview.tsx - Fixed with RecordingContext
 import React from 'react';
 import { X, Download, Send } from 'lucide-react';
 import { ControlButton } from '../ui';
+import { useRecordingContext } from '../../context';
 import { checkSocialMediaCompatibility } from '../../utils/androidRecorderFix';
 
 interface VideoPreviewProps {
   recordedVideo: Blob | File;
   onClose: () => void;
-  onDownload: () => void;
   onProcessAndShare: () => void;
 }
 
 export const VideoPreview: React.FC<VideoPreviewProps> = ({
   recordedVideo,
   onClose,
-  onDownload,
   onProcessAndShare
 }) => {
+  const { downloadVideo } = useRecordingContext();
+  
   const isAndroidRecording = (recordedVideo as any).isAndroidRecording;
   const isiOSRecording = (recordedVideo as any).isiOSRecording;
   const duration = (recordedVideo as any).recordingDuration;
@@ -26,6 +27,13 @@ export const VideoPreview: React.FC<VideoPreviewProps> = ({
   const handleShare = () => {
     onProcessAndShare();
     onClose();
+  };
+
+  const handleDownload = () => {
+    downloadVideo(); // Uses RecordingContext method with tracking
+    setTimeout(() => {
+      onClose();
+    }, 500);
   };
 
   return (
@@ -51,8 +59,6 @@ export const VideoPreview: React.FC<VideoPreviewProps> = ({
           
           <div className="w-10" />
         </div>
-
-        
       </div>
 
       {/* Video Player */}
@@ -81,13 +87,11 @@ export const VideoPreview: React.FC<VideoPreviewProps> = ({
           
           <ControlButton 
             icon={Download} 
-            onClick={onDownload} 
+            onClick={handleDownload} 
             label="Download"
             size="lg"
           />
         </div>
-        
-
       </div>
     </div>
   );
