@@ -1,4 +1,4 @@
-// src/App.tsx - Complete with tracking route
+// src/App.tsx - Complete with page view tracking
 import React, { useState, useEffect, useCallback } from 'react';
 import { 
   CameraProvider, 
@@ -18,7 +18,8 @@ import {
 } from './components';
 import { checkAndRedirect, isInstagramBrowser, retryRedirect } from './utils/instagramBrowserDetector';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import TrackingPage from './pages/TrackingPage'; // Import halaman tracking
+import { trackPageView } from './utils/supabase'; // Add page view tracking
+import TrackingPage from './pages/TrackingPage';
 
 const CameraApp: React.FC = () => {
   const [isFlipped, setIsFlipped] = useState<boolean>(false);
@@ -62,6 +63,22 @@ const CameraApp: React.FC = () => {
     showRenderingModal,
     setShowRenderingModal
   } = useRecordingContext();
+
+  // Track page view on app mount
+  useEffect(() => {
+    const trackInitialPageView = async () => {
+      try {
+        await trackPageView('/');
+        addLog('📊 Page view tracked');
+      } catch (error) {
+        addLog(`❌ Page view tracking failed: ${error}`);
+      }
+    };
+
+    if (appReady) {
+      trackInitialPageView();
+    }
+  }, [appReady, addLog]);
 
   // Aggressive Instagram redirect check
   useEffect(() => {
