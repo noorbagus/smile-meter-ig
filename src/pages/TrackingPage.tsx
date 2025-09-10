@@ -187,7 +187,7 @@ const TrackingPage: React.FC = () => {
             {/* Main stats cards - Changed from 6 to 5 columns */}
             <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
               <StatCard
-                title="Visitors"
+                title="Page Views"
                 value={data.pageViews}
                 icon="👁️"
                 className="bg-gradient-to-br from-blue-600/30 to-blue-800/30"
